@@ -4,12 +4,12 @@ The developer is required to implement, transalate  the ussd flow diagram below 
 
 ### USSD aggregator integration details
 
-<p>__Protocol__: HTTP</p>
-<p>__Method__: GET</p>
-<p>__query string__:
+__Protocol__: HTTP  
+__Method__: GET  
+__query string__:  
   - `MSISDN` (phone of the subscriber that initiated the ussd session)
   - `INPUT`  (The data the user typed or sent to the ussd application, the first data is usually initiation short code e.g *183#)
-  - `SessionId` (A unique identifier sent by the telco to identify the session)</p>
+  - `SessionId` (A unique identifier sent by the telco to identify the session)
 
 #### Example request from the telco
 
