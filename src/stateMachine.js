@@ -18,6 +18,18 @@ const loginHandler = require('./handlers/loginHandler');
 const wrongPinHandler = require('./handlers/wrongPinHandler');
 const accountLockedHandler = require('./handlers/accountLockedHandler');
 const mainMenuHandler = require('./handlers/mainMenuHandler');
+const loansMenuHandler = require('./handlers/loansMenuHandler');
+const loanBalanceHandler = require('./handlers/loanBalanceHandler');
+const paymentBreakdownHandler = require('./handlers/paymentBreakdownHandler');
+const miniStatementHandler = require('./handlers/miniStatementHandler');
+const nextDueDateHandler = require('./handlers/nextDueDateHandler');
+const accountInfoMenuHandler = require('./handlers/accountInfoMenuHandler');
+const accountMiniStatementHandler = require('./handlers/accountMiniStatementHandler');
+const registeredPhoneHandler = require('./handlers/registeredPhoneHandler');
+const accountNextDueHandler = require('./handlers/accountNextDueHandler');
+const loanDetailsHandler = require('./handlers/loanDetailsHandler');
+const accountDetailsHandler = require('./handlers/accountDetailsHandler');
+const recentTransactionsHandler = require('./handlers/recentTransactionsHandler');
 
 class StateMachine {
   /**
@@ -42,23 +54,28 @@ class StateMachine {
       
       // First-time access, create new session
       if (!session) {
+        const userData = userRepository.getUser(msisdn);
         session = {
+          currentState: STATES.INITIAL,
           sessionId,
-          msisdn,
-          state: STATES.INITIAL,
-          language: userRepository.getLanguage(msisdn) || null,
-          tempPin: null,
-          contextData: {}
+          phoneNumber: msisdn,
+          previousStates: [],
+          customerData: userData,
+          language: userData.preferredLanguage || null,
+          tempData: {}
         };
         
         session = sessionStore.saveSession(sessionId, session);
       }
       
+      // Track previous state for navigation
+      const previousState = session.currentState;
+      
       // Process input based on current state
       let response;
       
       // Select appropriate handler based on current state 
-      switch (session.state) {
+      switch (session.currentState) {
         case STATES.INITIAL:
           response = await initialHandler.handle(session, input);
           break;
@@ -91,10 +108,63 @@ class StateMachine {
           response = await mainMenuHandler.handle(session, input);
           break;
           
+        case STATES.LOANS_MENU:
+          response = await loansMenuHandler.handle(session, input);
+          break;
+          
+        case STATES.LOAN_BALANCE:
+          response = await loanBalanceHandler.handle(session, input);
+          break;
+          
+        case STATES.PAYMENT_BREAKDOWN:
+          response = await paymentBreakdownHandler.handle(session, input);
+          break;
+          
+        case STATES.MINI_STATEMENT:
+          response = await miniStatementHandler.handle(session, input);
+          break;
+          
+        case STATES.NEXT_DUE_DATE:
+          response = await nextDueDateHandler.handle(session, input);
+          break;
+          
+        case STATES.ACCOUNT_INFO_MENU:
+          response = await accountInfoMenuHandler.handle(session, input);
+          break;
+          
+        case STATES.ACCOUNT_MINI_STATEMENT:
+          response = await accountMiniStatementHandler.handle(session, input);
+          break;
+          
+        case STATES.REGISTERED_PHONE:
+          response = await registeredPhoneHandler.handle(session, input);
+          break;
+          
+        case STATES.ACCOUNT_NEXT_DUE:
+          response = await accountNextDueHandler.handle(session, input);
+          break;
+          
+        case STATES.LOAN_DETAILS:
+          response = await loanDetailsHandler.handle(session, input);
+          break;
+          
+        case STATES.ACCOUNT_DETAILS:
+          response = await accountDetailsHandler.handle(session, input);
+          break;
+          
+        case STATES.RECENT_TRANSACTIONS:
+          response = await recentTransactionsHandler.handle(session, input);
+          break;
+          
         default:
           // Invalid state, reset to initial
-          session.state = STATES.INITIAL;
+          session.currentState = STATES.INITIAL;
           response = await initialHandler.handle(session, input);
+      }
+      
+      // If the state changed, add the previous state to history
+      if (previousState !== session.currentState && response.type === RESPONSE_TYPES.CONTINUE) {
+        session.previousStates.push(previousState);
       }
       
       // Save updated session if continuing
@@ -114,6 +184,42 @@ class StateMachine {
         RESPONSE_TYPES.END
       );
     }
+  }
+  
+  /**
+   * Helper method to continue session with a message
+   * @param {string} message - Message to display
+   * @returns {object} Continue response object
+   */
+  continueSession(message) {
+    return {
+      message,
+      type: RESPONSE_TYPES.CONTINUE
+    };
+  }
+  
+  /**
+   * Helper method to end session with a message
+   * @param {string} message - Message to display
+   * @returns {object} End response object
+   */
+  endSession(message) {
+    return {
+      message,
+      type: RESPONSE_TYPES.END
+    };
+  }
+  
+  /**
+   * Handle back navigation
+   * @param {object} session - Current session
+   * @returns {string} Previous state or fallback
+   */
+  goBack(session) {
+    if (session.previousStates && session.previousStates.length > 0) {
+      return session.previousStates.pop();
+    }
+    return STATES.MAIN_MENU; // Default fallback
   }
   
   /**

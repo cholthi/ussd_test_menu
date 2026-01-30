@@ -13,7 +13,7 @@ __query string__:
 
 #### Example request from the telco
 
-http://localhost:9090/ussd_handler.py?MSISDN=211925415377&INPUT=*183#&SessionId=g5767fnn5
+http://localhost:8090/ussd_handler.py?MSISDN=211925415377&INPUT=*183#&SessionId=g5767fnn5
 
 #### Sample Response from the application
 
@@ -83,29 +83,78 @@ node src/index.js
 
 Send HTTP GET requests to the USSD endpoint:
 
+> **Recommended Approach**: Use curl's `--data-urlencode` with `-G` flag for automatic URL encoding. This handles all special characters (including `#`) automatically without manual encoding.
+
 **Initial Request (dial *183#):**
-```
-curl -i 'http://localhost:9090/ussd?MSISDN=211925415377&INPUT=*183%23&SessionId=test123'
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
 ```
 
 **Language Selection (select English):**
-```
-curl -i 'http://localhost:9090/ussd?MSISDN=211925415377&INPUT=*183%23*2&SessionId=test123'
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#2" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
 ```
 
 **Set PIN:**
-```
-curl -i 'http://localhost:9090/ussd?MSISDN=211925415377&INPUT=*183%23*2*1234&SessionId=test123'
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#2*1234" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
 ```
 
 **Confirm PIN:**
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#2*1234*1234" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
 ```
-curl -i 'http://localhost:9090/ussd?MSISDN=211925415377&INPUT=*183%23*2*1234*1234&SessionId=test123'
+
+**Navigate to Loans Menu:**
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#2*1234*1234*1" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
+```
+
+**Navigate to Account Info:**
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#2*1234*1234*2" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
+```
+
+**Direct to Main Menu (00 shortcut):**
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#2*1234*1234*1*00" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
 ```
 
 **Logout:**
-```
-curl -i 'http://localhost:9090/ussd?MSISDN=211925415377&INPUT=*183%23*2*1234*1234*1&SessionId=test123'
+```bash
+curl -G -i \
+  --data-urlencode "MSISDN=211925415377" \
+  --data-urlencode "INPUT=*183#2*1234*1234*3" \
+  --data-urlencode "SessionId=g5767fnn5" \
+  http://localhost:8090/ussd
 ```
 
 ## Limitations

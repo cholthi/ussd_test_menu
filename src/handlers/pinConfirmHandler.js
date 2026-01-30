@@ -14,34 +14,65 @@ const languageService = require('../languageService');
  * @returns {object} Response with message and type
  */
 async function handle(session, input) {
-  // Check if confirmation PIN matches the temporary PIN
-  if (input !== session.tempPin) {
-    // PINs don't match, go back to PIN setup
-    session.state = STATES.PIN_SETUP;
-    session.tempPin = null;
-    
+  // Handle back option
+  if (input === '0') {
+    session.currentState = STATES.PIN_SETUP;
     return {
-      message: `${languageService.getText('pinMismatch', session.language)}\n\n${languageService.getText('pinSetupPrompt', session.language)}`,
+      message: languageService.getText('pinSetupPrompt', session.language),
       type: RESPONSE_TYPES.CONTINUE
     };
   }
   
-  // PINs match, save PIN for user
-  userRepository.setPin(session.msisdn, session.tempPin);
+  // Validate PIN format (4 digits)
+  if (!input || input.length !== 4 || !/^\d{4}$/.test(input)) {
+    return {
+      message: languageService.getText('invalidPin', session.language),
+      type: RESPONSE_TYPES.CONTINUE
+    };
+  }
   
-  // Clear temporary PIN
-  session.tempPin = null;
+  // Check if PINs match
+  if (input !== session.tempData.tempPin) {
+    // PINs don't match, go back to PIN setup
+    session.currentState = STATES.PIN_SETUP;
+    session.tempData.tempPin = null; // Clear temp PIN
+    
+    return {
+      message: languageService.getText('pinMismatch', session.language),
+      type: RESPONSE_TYPES.CONTINUE
+    };
+  }
   
-  // Move to main menu
-  session.state = STATES.MAIN_MENU;
+  // PINs match, save PIN
+  const success = userRepository.setPin(session.phoneNumber, input);
   
-  // Success message
-  const successMsg = languageService.getText('pinSuccess', session.language);
-  const loginSuccessMsg = languageService.getText('loginSuccess', session.language);
-  const logoutOption = languageService.getText('logoutOption', session.language);
+  if (!success) {
+    return {
+      message: languageService.getText('pinSetupFailed', session.language),
+      type: RESPONSE_TYPES.END
+    };
+  }
+  
+  // Update customer data in session
+  if (session.customerData) {
+    session.customerData.pin = input;
+    session.customerData.hasPin = true;
+  }
+  
+  // Clear temporary PIN data
+  session.tempData.tempPin = null;
+  
+  // PIN setup successful, go to main menu
+  session.currentState = STATES.MAIN_MENU;
+  
+  // Get user data and build main menu
+  const { buildMainMenu } = require('./mainMenuHandler');
+  const user = session.customerData;
+  const successMessage = languageService.getText('pinSetupSuccess', session.language);
+  const mainMenu = buildMainMenu(user, session.language);
   
   return {
-    message: `${successMsg}\n${loginSuccessMsg}\n\n${logoutOption}`,
+    message: `${successMessage}\n\n${mainMenu}`,
     type: RESPONSE_TYPES.CONTINUE
   };
 }

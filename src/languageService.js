@@ -10,6 +10,7 @@ const translations = {
   // English translations
   [LANGUAGES.ENGLISH]: {
     welcome: 'Welcome to Demo USSD',
+    languageSelection: 'Please select your language:\n1. Kiswahili\n2. English\n3. Somali',
     languagePrompt: 'Please select your language:',
     languageOptions: '1. Kiswahili\n2. English\n3. Somali',
     invalidOption: 'Invalid option. Please try again.',
@@ -17,15 +18,38 @@ const translations = {
     invalidPin: 'PIN must be 4 digits. Please try again.',
     pinConfirmPrompt: 'Please confirm your PIN:',
     pinMismatch: 'PINs do not match. Please try again.',
-    pinSuccess: 'PIN set successfully!',
+    pinSetupSuccess: 'PIN set successfully!',
+    pinSetupFailed: 'Failed to set PIN. Please try again later.',
     loginPrompt: 'Please enter your PIN:',
-    loginSuccess: 'You are now logged in.',
+    loginSuccess: 'Login successful!',
     wrongPin: 'Wrong PIN. Please try again.',
     attemptsLeft: 'Attempts left: {attempts}',
     accountLocked: 'Your account has been locked due to multiple failed attempts.\nPlease contact customer support.',
-    logoutOption: '1. Logout',
+    logoutOption: 'Logout',
     userNotFound: 'User not found. Please contact customer support.',
-    goodbye: 'Thank you for using our service. Goodbye!'
+    goodbye: 'Thank you for using our service. Goodbye!',
+    // Enhanced menu system translations
+    welcomeBack: 'Welcome {name}!',
+    loansOption: 'Loans',
+    accountInfoOption: 'Account Info',
+    backOption: 'Back (if applicable)',
+    backToMainMenu: 'Back to Main Menu',
+    mainMenuOption: 'Main Menu',
+    // Loan related translations
+    loanInformation: 'LOAN INFORMATION',
+    loanStatus: 'Status: {status}',
+    loanBalance: 'Balance: {balance}',
+    nextPayment: 'Next Payment: {date}',
+    monthlyAmount: 'Monthly: {amount}',
+    paymentHistoryOption: 'Payment History',
+    loanDetailsOption: 'Loan Details',
+    // Account related translations
+    accountInformation: 'ACCOUNT INFORMATION',
+    accountNumber: 'Account: {number}',
+    accountBalance: 'Balance: {balance}',
+    accountType: 'Type: {type}',
+    recentTransactionsOption: 'Recent Transactions',
+    accountDetailsOption: 'Account Details'
   },
   
   // Kiswahili translations

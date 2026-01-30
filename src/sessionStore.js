@@ -23,7 +23,13 @@ class SessionStore {
   saveSession(sessionId, sessionData) {
     // Set last activity timestamp
     const updatedSession = {
-      ...sessionData,
+      currentState: sessionData.currentState || 'INITIAL',
+      sessionId: sessionId,
+      phoneNumber: sessionData.phoneNumber || sessionData.msisdn,
+      previousStates: sessionData.previousStates || [],
+      customerData: sessionData.customerData || null,
+      language: sessionData.language || 'en',
+      tempData: sessionData.tempData || {}, // For temporary data like PIN setup
       lastActivity: Date.now()
     };
     

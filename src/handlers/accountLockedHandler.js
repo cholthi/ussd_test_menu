@@ -13,7 +13,9 @@ const languageService = require('../languageService');
  * @returns {object} Response with message and type
  */
 async function handle(session, input) {
-  // Account is locked, always end session
+  // Account is locked, always terminate session
+  // No further interaction allowed until account is unlocked
+  
   return {
     message: languageService.getText('accountLocked', session.language),
     type: RESPONSE_TYPES.END

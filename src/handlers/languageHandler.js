@@ -14,6 +14,19 @@ const languageService = require('../languageService');
  * @returns {object} Response with message and type
  */
 async function handle(session, input) {
+  // Handle back option (though rarely used in language selection)
+  if (input === '0') {
+    // Go back to initial or end session if no previous state
+    if (session.previousStates && session.previousStates.length > 0) {
+      session.currentState = session.previousStates.pop();
+    } else {
+      return {
+        message: languageService.getText('goodbye', session.language || 'en'),
+        type: RESPONSE_TYPES.END
+      };
+    }
+  }
+  
   // Parse language selection (1, 2, or 3)
   const selectedLanguage = languageService.getLanguageFromSelection(input);
   
@@ -27,14 +40,19 @@ async function handle(session, input) {
   
   // Set language in session and user preferences
   session.language = selectedLanguage;
-  userRepository.setLanguage(session.msisdn, selectedLanguage);
+  userRepository.setLanguage(session.phoneNumber, selectedLanguage);
   
-  const user = userRepository.getUser(session.msisdn);
+  // Update customer data in session
+  if (session.customerData) {
+    session.customerData.preferredLanguage = selectedLanguage;
+  }
+  
+  const user = session.customerData || userRepository.getUser(session.phoneNumber);
   
   // Check if user has PIN set
   if (user.hasPin) {
     // PIN set, go to login
-    session.state = STATES.LOGIN;
+    session.currentState = STATES.LOGIN;
     
     return {
       message: languageService.getText('loginPrompt', session.language),
@@ -42,7 +60,7 @@ async function handle(session, input) {
     };
   } else {
     // No PIN set, go to PIN setup
-    session.state = STATES.PIN_SETUP;
+    session.currentState = STATES.PIN_SETUP;
     
     return {
       message: languageService.getText('pinSetupPrompt', session.language),
